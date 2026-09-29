@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Minhas Tarefas</title>
+<link rel="manifest" href="manifest.json">
+
+<meta name="theme-color" content="#2563eb">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Minhas Tarefas</h1>
+        <p>Meu primeiro aplicativo 🚀</p>
+
+        <div class="nova-tarefa">
+            <input
+                type="text"
+                id="tarefa"
+                placeholder="Digite uma tarefa..."
+            >
+
+            <button onclick="adicionarTarefa()">
+                + Adicionar
+            </button>
+        </div>
+<div class="resumo">
+    <span id="contador">0 tarefas</span>
+
+    <button
+        class="limpar"
+        onclick="limparConcluidas()">
+        Limpar concluídas
+    </button>
+</div>
+        <ul id="lista"></ul>
+
+    </div>
+<script>
+  let tarefas =
+    JSON.parse(localStorage.getItem("tarefas")) || [];
+
+function salvarTarefas() {
+    localStorage.setItem(
+        "tarefas",
+        JSON.stringify(tarefas)
+    );
+}
+
+function mostrarTarefas() {
+
+    const lista =
+        document.getElementById("lista");
+
+    lista.innerHTML = "";
+
+    tarefas.forEach(function(tarefa, indice) {
+
+        const item =
+            document.createElement("li");
+
+        const texto =
+            document.createElement("span");
+
+        texto.textContent = tarefa.texto;
+
+        if (tarefa.concluida) {
+            texto.style.textDecoration = "line-through";
+            texto.style.opacity = "0.5";
+        }
+
+        // EDITAR
+        const editar =
+            document.createElement("button");
+
+        editar.textContent = "✏️";
+        editar.className = "editar";
+
+        editar.onclick = function() {
+
+            const novoTexto =
+                prompt(
+                    "Editar tarefa:",
+                    tarefa.texto
+                );
+
+            if (
+                novoTexto !== null &&
+                novoTexto.trim() !== ""
+            ) {
+                tarefas[indice].texto =
+                    novoTexto.trim();
+
+                salvarTarefas();
+                mostrarTarefas();
+            }
+        };
+
+        // CONCLUIR
+        const concluir =
+            document.createElement("button");
+
+        concluir.textContent = "✓";
+        concluir.className = "concluir";
+
+        concluir.onclick = function() {
+
+            tarefas[indice].concluida =
+                !tarefas[indice].concluida;
+
+            salvarTarefas();
+            mostrarTarefas();
+        };
+
+        // EXCLUIR
+        const excluir =
+            document.createElement("button");
+
+        excluir.textContent = "🗑️";
+        excluir.className = "excluir";
+
+        excluir.onclick = function() {
+
+            tarefas.splice(indice, 1);
+
+            salvarTarefas();
+            mostrarTarefas();
+        };
+
+        item.appendChild(texto);
+        item.appendChild(editar);
+        item.appendChild(concluir);
+        item.appendChild(excluir);
+
+        lista.appendChild(item);
+    });
+
+    atualizarContador();
+}
+
+function adicionarTarefa() {
+
+    const campo =
+        document.getElementById("tarefa");
+
+    const texto =
+        campo.value.trim();
+
+    if (texto === "") {
+        alert("Digite uma tarefa.");
+        return;
+    }
+
+    tarefas.push({
+        texto: texto,
+        concluida: false
+    });
+
+    salvarTarefas();
+    mostrarTarefas();
+
+    campo.value = "";
+    campo.focus();
+}
+
+function atualizarContador() {
+
+    const total = tarefas.length;
+
+    const concluidas =
+        tarefas.filter(function(tarefa) {
+            return tarefa.concluida;
+        }).length;
+
+    const pendentes =
+        total - concluidas;
+
+    document.getElementById("contador")
+        .textContent =
+        pendentes +
+        " pendente(s) • " +
+        concluidas +
+        " concluída(s)";
+}
+
+function limparConcluidas() {
+
+    tarefas =
+        tarefas.filter(function(tarefa) {
+            return !tarefa.concluida;
+        });
+
+    salvarTarefas();
+    mostrarTarefas();
+}
+
+mostrarTarefas();
+  </script>
+  <script>
+if ("serviceWorker" in navigator) {
+
+    window.addEventListener("load", function() {
+
+        navigator.serviceWorker
+            .register("./sw.js")
+            .then(function() {
+                console.log("Aplicativo preparado para funcionar offline.");
+            })
+            .catch(function(erro) {
+                console.log("Erro no Service Worker:", erro);
+            });
+
+    });
+
+}
+  </script>
+    
+</body>
+</html>
